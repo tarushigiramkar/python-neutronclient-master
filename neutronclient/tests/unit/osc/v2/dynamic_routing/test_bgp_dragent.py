@@ -25,7 +25,7 @@ class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
     def setUp(self):
         super(TestAddBgpSpeakerToDRAgent, self).setUp()
 
-        # Get the command object to test
+       
         self.cmd = bgp_dragent.AddBgpSpeakerToDRAgent(self.app, self.namespace)
 
     def test_add_bgp_speaker_to_dragent(self):
@@ -44,10 +44,15 @@ class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
                                return_value=None):
 
             result = self.cmd.take_action(parsed_args)
+
+           
             self.networkclient.add_bgp_speaker_to_dragent.\
                 assert_called_once_with(
-                    self._bgp_dragent_id, self._bgp_speaker_id)
+                    self._bgp_speaker_id, self._bgp_dragent_id)
+
             self.assertIsNone(result)
+
+
 
 
 class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
@@ -78,7 +83,11 @@ class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
                                "remove_bgp_speaker_from_dragent",
                                return_value=None):
             result = self.cmd.take_action(parsed_args)
+
+           
             self.networkclient.remove_bgp_speaker_from_dragent.\
-                assert_called_once_with(self._bgp_dragent_id,
-                                        self._bgp_speaker_id)
+                assert_called_once_with(self._bgp_speaker_id,
+                                        self._bgp_dragent_id)
+
             self.assertIsNone(result)
+
