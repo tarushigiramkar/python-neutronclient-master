@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 #
+
 from unittest import mock
 
 from neutronclient.osc.v2.dynamic_routing import bgp_dragent
@@ -17,18 +18,19 @@ from neutronclient.tests.unit.osc.v2.dynamic_routing import fakes
 
 
 class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
-    _bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
-    _bgp_dragent = fakes.FakeDRAgent.create_one_dragent()
-    _bgp_speaker_id = _bgp_speaker['id']
-    _bgp_dragent_id = _bgp_dragent['id']
-
+    """Test case for AddBgpSpeakerToDRAgent command."""
+    
     def setUp(self):
         super(TestAddBgpSpeakerToDRAgent, self).setUp()
-
-       
+        self._bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
+        self._bgp_dragent = fakes.FakeDRAgent.create_one_dragent()
+        self._bgp_speaker_id = self._bgp_speaker['id']
+        self._bgp_dragent_id = self._bgp_dragent['id']
         self.cmd = bgp_dragent.AddBgpSpeakerToDRAgent(self.app, self.namespace)
 
     def test_add_bgp_speaker_to_dragent(self):
+        """Test add_bgp_speaker_to_dragent command invocation."""
+        # Command arguments
         arglist = [
             self._bgp_dragent_id,
             self._bgp_speaker_id,
@@ -37,36 +39,39 @@ class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
             ('dragent_id', self._bgp_dragent_id),
             ('bgp_speaker', self._bgp_speaker_id),
         ]
+        
+        # Parse arguments
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
 
+        # Mock the API call and execute the command
         with mock.patch.object(self.networkclient,
-                               "add_bgp_speaker_to_dragent",
-                               return_value=None):
-
+                              "add_bgp_speaker_to_dragent",
+                              return_value=None) as mock_add:
             result = self.cmd.take_action(parsed_args)
-
-           
-            self.networkclient.add_bgp_speaker_to_dragent.\
-                assert_called_once_with(
-                    self._bgp_speaker_id, self._bgp_dragent_id)
-
+            
+            # Verify API call was made with correct parameters
+            mock_add.assert_called_once_with(
+                self._bgp_speaker_id, self._bgp_dragent_id)
+            
+            # Verify command result
             self.assertIsNone(result)
 
 
 class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
-    _bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
-    _bgp_dragent = fakes.FakeDRAgent.create_one_dragent()
-    _bgp_speaker_id = _bgp_speaker['id']
-    _bgp_dragent_id = _bgp_dragent['id']
-
+    """Test case for RemoveBgpSpeakerFromDRAgent command."""
+    
     def setUp(self):
         super(TestRemoveBgpSpeakerFromDRAgent, self).setUp()
-
-        # Get the command object to test
+        self._bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
+        self._bgp_dragent = fakes.FakeDRAgent.create_one_dragent()
+        self._bgp_speaker_id = self._bgp_speaker['id']
+        self._bgp_dragent_id = self._bgp_dragent['id']
         self.cmd = bgp_dragent.RemoveBgpSpeakerFromDRAgent(
             self.app, self.namespace)
 
     def test_remove_bgp_speaker_from_dragent(self):
+        """Test remove_bgp_speaker_from_dragent command invocation."""
+        # Command arguments
         arglist = [
             self._bgp_dragent_id,
             self._bgp_speaker_id,
@@ -75,107 +80,114 @@ class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
             ('dragent_id', self._bgp_dragent_id),
             ('bgp_speaker', self._bgp_speaker_id),
         ]
+        
+        # Parse arguments
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
 
+        # Mock the API call and execute the command
         with mock.patch.object(self.networkclient,
-                               "remove_bgp_speaker_from_dragent",
-                               return_value=None):
+                              "remove_bgp_speaker_from_dragent",
+                              return_value=None) as mock_remove:
             result = self.cmd.take_action(parsed_args)
-
-           
-            self.networkclient.remove_bgp_speaker_from_dragent.\
-                assert_called_once_with(self._bgp_speaker_id,
-                                        self._bgp_dragent_id)
-
+            
+            # Verify API call was made with correct parameters
+            mock_remove.assert_called_once_with(
+                self._bgp_speaker_id, self._bgp_dragent_id)
+            
+            # Verify command result
             self.assertIsNone(result)
 
 
 class TestListDRAgentsHostingBgpSpeaker(fakes.TestNeutronDynamicRoutingOSCV2):
-    _bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
-    _bgp_speaker_id = _bgp_speaker['id']
-    _dragents = fakes.FakeDRAgent.create_dragents(count=3)
-
+    """Test case for ListDRAgent command when filtering by BGP speaker."""
+    
     def setUp(self):
         super(TestListDRAgentsHostingBgpSpeaker, self).setUp()
-        # Set up the command object to test
+        self._bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
+        self._bgp_speaker_id = self._bgp_speaker['id']
+        self._dragents = fakes.FakeDRAgent.create_dragents(count=3)
         self.cmd = bgp_dragent.ListDRAgent(self.app, self.namespace)
 
     def test_list_dragents_hosting_bgp_speaker(self):
+        """Test list_dragents with bgp-speaker filter."""
+        # Command arguments
         arglist = [
             '--bgp-speaker', self._bgp_speaker_id,
         ]
         verifylist = [
             ('bgp_speaker', self._bgp_speaker_id),
         ]
+        
+        # Parse arguments
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
 
-        # Set the return value of get_bgp_dragents_hosting_speaker
-        self.networkclient.get_bgp_dragents_hosting_speaker = mock.Mock(
-            return_value=self._dragents)
+        # Mock the API call and execute the command
+        with mock.patch.object(self.networkclient,
+                             "get_bgp_dragents_hosting_speaker",
+                             return_value=self._dragents) as mock_list:
+            columns, data = self.cmd.take_action(parsed_args)
+            
+            # Verify API call was made with correct parameters
+            mock_list.assert_called_once_with(self._bgp_speaker_id)
+            
+            # Check that columns are correct
+            expected_columns = (
+                'ID', 'Agent Type', 'Host', 'Availability Zone', 
+                'Alive', 'State', 'Binary'
+            )
+            self.assertEqual(expected_columns, columns)
+            
+            # Convert generator to list for testing
+            data_list = list(data)
+            self.assertEqual(len(data_list), 3)
+            
+            # Check each row of data
+            for i, agent_data in enumerate(data_list):
+                agent = self._dragents[i]
+                self.assertEqual(agent.id, agent_data[0])  # ID
+                self.assertEqual(agent.agent_type, agent_data[1])  # Agent Type
+                self.assertEqual(agent.host, agent_data[2])  # Host
+                self.assertEqual(agent.availability_zone, agent_data[3])  # AZ
+                self.assertEqual(agent.is_alive, agent_data[4])  # Alive
+                self.assertEqual(agent.is_admin_state_up, agent_data[5])  # State
+                self.assertEqual(agent.binary, agent_data[6])  # Binary
 
-        # Execute the command
-        columns, data = self.cmd.take_action(parsed_args)
-
-        # Verify the API call
-        self.networkclient.get_bgp_dragents_hosting_speaker.assert_called_once_with(
-            self._bgp_speaker_id)
-        
-        # Check that columns are correct
-        self.assertEqual(
-            ('ID', 'Agent Type', 'Host', 'Availability Zone', 'Alive', 'State', 'Binary'),
-            columns)
-
-        # Check that the data matches our mocked dynamic routing agents
-        agents_data = list(data)
-        self.assertEqual(len(agents_data), 3)  # We created 3 agents in our mock
-        
-        for i, agent in enumerate(agents_data):
-            self.assertEqual(agent[0], self._dragents[i].id)  # ID
-            self.assertEqual(agent[1], self._dragents[i].agent_type)  # Agent Type
-            self.assertEqual(agent[2], self._dragents[i].host)  # Host
-            self.assertEqual(agent[3], self._dragents[i].availability_zone)  # Availability Zone
-            self.assertEqual(agent[4], self._dragents[i].is_alive)  # Alive
-            self.assertEqual(agent[5], self._dragents[i].is_admin_state_up)  # State
-            self.assertEqual(agent[6], self._dragents[i].binary)  # Binary
-
-
-class TestListDRAgents(fakes.TestNeutronDynamicRoutingOSCV2):
-    _dragents = fakes.FakeDRAgent.create_dragents(count=3)
-
-    def setUp(self):
-        super(TestListDRAgents, self).setUp()
-        # Set up the command object to test
-        self.cmd = bgp_dragent.ListDRAgent(self.app, self.namespace)
-
-    def test_list_all_dragents(self):
+    def test_list_dragents_without_bgp_speaker(self):
+        """Test list_dragents without a bgp-speaker filter."""
+        # Command arguments (empty)
         arglist = []
         verifylist = []
+        
+        # Parse arguments
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
 
-        # Set the return value of agents
-        self.networkclient.agents = mock.Mock(return_value=self._dragents)
-
-        # Execute the command
-        columns, data = self.cmd.take_action(parsed_args)
-
-        # Verify the API call
-        self.networkclient.agents.assert_called_once_with(
-            agent_type='BGP dynamic routing agent')
-        
-        # Check that columns are correct
-        self.assertEqual(
-            ('ID', 'Agent Type', 'Host', 'Availability Zone', 'Alive', 'State', 'Binary'),
-            columns)
-
-        # Check that the data matches our mocked dynamic routing agents
-        agents_data = list(data)
-        self.assertEqual(len(agents_data), 3)  # We created 3 agents in our mock
-        
-        for i, agent in enumerate(agents_data):
-            self.assertEqual(agent[0], self._dragents[i].id)  # ID
-            self.assertEqual(agent[1], self._dragents[i].agent_type)  # Agent Type
-            self.assertEqual(agent[2], self._dragents[i].host)  # Host
-            self.assertEqual(agent[3], self._dragents[i].availability_zone)  # Availability Zone
-            self.assertEqual(agent[4], self._dragents[i].is_alive)  # Alive
-            self.assertEqual(agent[5], self._dragents[i].is_admin_state_up)  # State
-            self.assertEqual(agent[6], self._dragents[i].binary)  # Binary
+        # Mock the API call and execute the command
+        with mock.patch.object(self.networkclient,
+                              "agents",
+                              return_value=self._dragents) as mock_list:
+            columns, data = self.cmd.take_action(parsed_args)
+            
+            # Verify API call was made with correct parameters
+            mock_list.assert_called_once_with(agent_type='BGP dynamic routing agent')
+            
+            # Check that columns are correct
+            expected_columns = (
+                'ID', 'Agent Type', 'Host', 'Availability Zone', 
+                'Alive', 'State', 'Binary'
+            )
+            self.assertEqual(expected_columns, columns)
+            
+            # Convert generator to list for testing
+            data_list = list(data)
+            self.assertEqual(len(data_list), 3)
+            
+            # Check each row of data
+            for i, agent_data in enumerate(data_list):
+                agent = self._dragents[i]
+                self.assertEqual(agent.id, agent_data[0])  # ID
+                self.assertEqual(agent.agent_type, agent_data[1])  # Agent Type
+                self.assertEqual(agent.host, agent_data[2])  # Host
+                self.assertEqual(agent.availability_zone, agent_data[3])  # AZ
+                self.assertEqual(agent.is_alive, agent_data[4])  # Alive
+                self.assertEqual(agent.is_admin_state_up, agent_data[5])  # State
+                self.assertEqual(agent.binary, agent_data[6])  # Binary
