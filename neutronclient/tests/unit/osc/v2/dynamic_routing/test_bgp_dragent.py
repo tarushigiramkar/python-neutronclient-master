@@ -29,8 +29,6 @@ class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
         self.cmd = bgp_dragent.AddBgpSpeakerToDRAgent(self.app, self.namespace)
 
     def test_add_bgp_speaker_to_dragent(self):
-        """Test add_bgp_speaker_to_dragent command invocation."""
-        # Command arguments
         arglist = [
             self._bgp_dragent_id,
             self._bgp_speaker_id,
@@ -39,21 +37,16 @@ class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
             ('dragent_id', self._bgp_dragent_id),
             ('bgp_speaker', self._bgp_speaker_id),
         ]
-        
-        # Parse arguments
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
 
-        # Mock the API call and execute the command
         with mock.patch.object(self.networkclient,
-                              "add_bgp_speaker_to_dragent",
-                              return_value=None) as mock_add:
+                               "add_bgp_speaker_to_dragent",
+                               return_value=None):
+
             result = self.cmd.take_action(parsed_args)
-            
-            # Verify API call was made with correct parameters
-            mock_add.assert_called_once_with(
-                self._bgp_speaker_id, self._bgp_dragent_id)
-            
-            # Verify command result
+            self.networkclient.add_bgp_speaker_to_dragent.\
+                assert_called_once_with(
+                    self._bgp_dragent_id, self._bgp_speaker_id)
             self.assertIsNone(result)
 
 
@@ -70,8 +63,6 @@ class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
             self.app, self.namespace)
 
     def test_remove_bgp_speaker_from_dragent(self):
-        """Test remove_bgp_speaker_from_dragent command invocation."""
-        # Command arguments
         arglist = [
             self._bgp_dragent_id,
             self._bgp_speaker_id,
@@ -80,21 +71,15 @@ class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
             ('dragent_id', self._bgp_dragent_id),
             ('bgp_speaker', self._bgp_speaker_id),
         ]
-        
-        # Parse arguments
         parsed_args = self.check_parser(self.cmd, arglist, verifylist)
 
-        # Mock the API call and execute the command
         with mock.patch.object(self.networkclient,
-                              "remove_bgp_speaker_from_dragent",
-                              return_value=None) as mock_remove:
+                               "remove_bgp_speaker_from_dragent",
+                               return_value=None):
             result = self.cmd.take_action(parsed_args)
-            
-            # Verify API call was made with correct parameters
-            mock_remove.assert_called_once_with(
-                self._bgp_speaker_id, self._bgp_dragent_id)
-            
-            # Verify command result
+            self.networkclient.remove_bgp_speaker_from_dragent.\
+                assert_called_once_with(self._bgp_dragent_id,
+                                        self._bgp_speaker_id)
             self.assertIsNone(result)
 
 
