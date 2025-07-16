@@ -55,6 +55,7 @@ class TestAddBgpSpeakerToDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
 
 
 
+
 class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
     _bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
     _bgp_dragent = fakes.FakeDRAgent.create_one_dragent()
@@ -90,4 +91,53 @@ class TestRemoveBgpSpeakerFromDRAgent(fakes.TestNeutronDynamicRoutingOSCV2):
                                         self._bgp_dragent_id)
 
             self.assertIsNone(result)
+
+
+class TestListDRAgentsHostingBgpSpeaker(fakes.TestNeutronDynamicRoutingOSCV2):
+    _bgp_speaker = fakes.FakeBgpSpeaker.create_one_bgp_speaker()
+    _bgp_speaker_id = _bgp_speaker['id']
+    _dragents = fakes.FakeDRAgent.create_dragents(count=3)
+
+    def setUp(self):
+        super(TestListDRAgentsHostingBgpSpeaker, self).setUp()
+        # Set up the command object to test
+        self.cmd = bgp_dragent.ListDRAgent(self.app, self.namespace)
+
+    def test_list_dragents_hosting_bgp_speaker(self):
+        arglist = [
+            '--bgp-speaker', self._bgp_speaker_id,
+        ]
+        verifylist = [
+            ('bgp_speaker', self._bgp_speaker_id),
+        ]
+        parsed_args = self.check_parser(self.cmd, arglist, verifylist)
+
+        # Set the return value of get_bgp_dragents_hosting_speaker
+        self.networkclient.get_bgp_dragents_hosting_speaker = mock.Mock(
+            return_value=self._dragents)
+
+        # Execute the command
+        columns, data = self.cmd.take_action(parsed_args)
+
+        # Verify the API call
+        self.networkclient.get_bgp_dragents_hosting_speaker.assert_called_once_with(
+            self._bgp_speaker_id)
+        
+        # Check that columns are correct
+        self.assertEqual(
+            ('ID', 'Agent Type', 'Host', 'Availability Zone', 'Alive', 'State', 'Binary'),
+            columns)
+
+        # Check that the data matches our mocked dynamic routing agents
+        agents_data = list(data)
+        self.assertEqual(len(agents_data), 3)  # We created 3 agents in our mock
+        
+        for i, agent in enumerate(agents_data):
+            self.assertEqual(agent[0], self._dragents[i].id)  # ID
+            self.assertEqual(agent[1], self._dragents[i].agent_type)  # Agent Type
+            self.assertEqual(agent[2], self._dragents[i].host)  # Host
+            self.assertEqual(agent[3], self._dragents[i].availability_zone)  # Availability Zone
+            self.assertEqual(agent[4], self._dragents[i].is_alive)  # Alive
+            self.assertEqual(agent[5], self._dragents[i].is_admin_state_up)  # State
+            self.assertEqual(agent[6], self._dragents[i].binary)  # Binary
 
